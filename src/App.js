@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Route, Routes, Link } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import CartPage from "./CartPage";
 import ProductDetailsPage from "./ProductDetailsPage";
 import CheckoutPage from "./CheckoutPage";
@@ -8,11 +10,13 @@ import PrivacyPolicyPage from "./PrivacyPolicyPage";
 import FAQPage from "./FAQPage";
 import AboutPage from "./AboutPage";
 import ContactPage from "./ContactPage";
+import AccountPage from "./AccountPage";
+import QuantityDropdown from "./QuantityDropdown";
 
 const API_BASE_URL = "https://fakestoreapi.com";
 
 const Header = ({ cartCount }) => (
-  <header className="bg-dark text-white p-3">
+  <header className="bg-dark text-white p-3 sticky-top">
     <div className="container">
       <div className="d-flex justify-content-between align-items-center">
         <Link to="/" className="text-white text-decoration-none">
@@ -27,6 +31,9 @@ const Header = ({ cartCount }) => (
           </Link>
           <Link to="/contact" className="text-white me-3">
             Contact
+          </Link>
+          <Link to="/account" className="text-white me-3">
+            Account
           </Link>
           <Link to="/cart" className="text-white">
             Cart ({cartCount})
@@ -56,6 +63,44 @@ const Footer = () => (
   </footer>
 );
 
+const SearchBar = ({ onSearch, onClear }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    onSearch(searchTerm);
+  };
+
+  const handleClear = () => {
+    setSearchTerm("");
+    onClear();
+  };
+
+  return (
+    <form onSubmit={handleSearch} className="d-flex my-3">
+      <input
+        type="text"
+        className="form-control me-2"
+        placeholder="Search products..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <button type="submit" className="btn btn-outline-success me-2">
+        Search
+      </button>
+      {searchTerm && (
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
+          onClick={handleClear}
+        >
+          Clear
+        </button>
+      )}
+    </form>
+  );
+};
+
 const HomePage = ({ products, addToCart }) => {
   return (
     <div className="container mt-5">
@@ -83,9 +128,13 @@ const HomePage = ({ products, addToCart }) => {
                 </h5>
                 <p className="card-text">${product.price.toFixed(2)}</p>
                 <p className="card-text text-muted">{product.category}</p>
+                <QuantityDropdown
+                  quantity={1}
+                  onQuantityChange={(quantity) => addToCart(product, quantity)}
+                />
                 <button
-                  onClick={() => addToCart(product)}
-                  className="btn btn-primary"
+                  onClick={() => addToCart(product, 1)}
+                  className="btn btn-primary mt-2"
                 >
                   Add to Cart
                 </button>
@@ -100,6 +149,7 @@ const HomePage = ({ products, addToCart }) => {
 
 const App = () => {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -124,6 +174,7 @@ const App = () => {
       }
       const data = await response.json();
       setProducts(data);
+      setFilteredProducts(data);
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -131,17 +182,21 @@ const App = () => {
     }
   };
 
-  const addToCart = (product) => {
+  const addToCart = (product, quantity) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
         return prevCart.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantity }
             : item,
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { ...product, quantity }];
+    });
+    toast.success(`${product.title} added to cart!`, {
+      position: "top-right",
+      autoClose: 3000,
     });
   };
 
@@ -154,7 +209,31 @@ const App = () => {
   };
 
   const removeFromCart = (productId) => {
+    const product = cart.find((item) => item.id === productId);
     setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+    toast.success(`${product.title} removed from cart!`, {
+      position: "top-right",
+      autoClose: 3000,
+    });
+  };
+
+  const placeOrder = () => {
+    toast.success("Order placed successfully!", {
+      position: "top-right",
+      autoClose: 5000,
+    });
+    setCart([]);
+  };
+
+  const handleSearch = (searchTerm) => {
+    const filtered = products.filter((product) =>
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+    setFilteredProducts(filtered);
+  };
+
+  const clearSearch = () => {
+    setFilteredProducts(products);
   };
 
   if (loading) {
@@ -168,11 +247,16 @@ const App = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} />
+      <div className="container">
+        <SearchBar onSearch={handleSearch} onClear={clearSearch} />
+      </div>
       <main className="flex-grow-1">
         <Routes>
           <Route
             path="/"
-            element={<HomePage products={products} addToCart={addToCart} />}
+            element={
+              <HomePage products={filteredProducts} addToCart={addToCart} />
+            }
           />
           <Route
             path="/product/:id"
@@ -188,15 +272,20 @@ const App = () => {
               />
             }
           />
-          <Route path="/checkout" element={<CheckoutPage cart={cart} />} />
+          <Route
+            path="/checkout"
+            element={<CheckoutPage cart={cart} placeOrder={placeOrder} />}
+          />
           <Route path="/terms" element={<TermsOfServicePage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/account" element={<AccountPage />} />
         </Routes>
       </main>
       <Footer />
+      <ToastContainer />
     </div>
   );
 };
