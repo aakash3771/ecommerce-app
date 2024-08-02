@@ -1,70 +1,145 @@
-# Getting Started with Create React App
+# MyEcommerce React Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## About the Project
 
-## Available Scripts
+MyEcommerce is a modern, responsive e-commerce web application built with React. It provides a seamless shopping experience for users, allowing them to browse products, add items to their cart, and complete the checkout process.
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- Browse a catalog of products
+- Filter products by category
+- Search for specific products
+- View detailed product information
+- Add products to the shopping cart
+- Adjust quantities in the cart
+- Complete the checkout process
+- View order history
+- Responsive design for mobile and desktop
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Technologies Used
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- React
+- React Router for navigation
+- Axios for API requests
+- Bootstrap for styling
+- React-Toastify for notifications
+- Playwright for UI testing
+- Jest for API testing
 
-### `npm test`
+## What We've Achieved
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Implemented a fully functional e-commerce frontend
+2. Created a responsive and intuitive user interface
+3. Integrated with a mock API (FakeStore API) for product data
+4. Implemented state management for the shopping cart
+5. Created a multi-step checkout process
+6. Added search and filtering functionality
+7. Implemented UI tests using Playwright
+8. Created API tests using Axios and Jest
 
-### `npm run build`
+## Getting Started
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Prerequisites
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Node.js (v14 or later)
+- npm (v6 or later)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Installation
 
-### `npm run eject`
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/myecommerce-react.git
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. Navigate to the project directory:
+   ```
+   cd myecommerce-react
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. Install the dependencies:
+   ```
+   npm install
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Running the Application
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+To start the development server:
 
-## Learn More
+```
+npm start
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+The application will be available at `http://localhost:3000`.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Running Tests
 
-### Code Splitting
+To run UI tests:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```
+npm run test:ui
+```
 
-### Analyzing the Bundle Size
+To run API tests:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```
+npm run test:api
+```
 
-### Making a Progressive Web App
+To run all tests:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```
+npm test
+```
 
-### Advanced Configuration
+## Project Structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```
+myecommerce-react/
+├── public/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── api.js
+│   ├── App.js
+│   └── index.js
+├── tests/
+│   ├── ui/
+│   └── api/
+├── package.json
+├── playwright.config.js
+├── jest.config.js
+└── README.md
+```
 
-### Deployment
+## Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+We welcome contributions to the MyEcommerce project. Please feel free to submit issues and pull requests.
 
-### `npm run build` fails to minify
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License.
+
+## Acknowledgments
+
+- [FakeStore API](https://fakestoreapi.com/) for providing mock e-commerce data
+- [Create React App](https://create-react-app.dev/) for the initial project setup
+
+| Test Title | Type | Automation Status |
+|------------|------|-------------------|
+| Homepage loads correctly | UI | Automated |
+| Can filter products by category | UI | Automated |
+| Can search for a specific product | UI | Automated |
+| Can view product details | UI | Automated |
+| Can add product to cart | UI | Automated |
+| Can adjust quantity in cart | UI | Automated |
+| Can remove product from cart | UI | Automated |
+| Can complete checkout process | UI | Automated |
+| Can view order history | UI | Automated |
+| GET /products returns all products | API | Automated |
+| GET /products/{id} returns a single product | API | Automated |
+| GET /products/categories returns all categories | API | Automated |
+| GET /products/category/{categoryName} returns products in a specific category | API | Automated |
+| POST /products adds a new product | API | Automated |
+| PUT /products/{id} updates a product | API | Automated |
+| DELETE /products/{id} deletes a product | API | Automated |
+| POST /auth/login authenticates a user | API | Automated |

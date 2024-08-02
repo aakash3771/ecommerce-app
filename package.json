@@ -20,7 +20,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "clean": "rm -rf node_modules package-lock.json && npm cache clean --force && npm install"
+    "clean": "rm -rf node_modules package-lock.json && npm cache clean --force && npm install",
+    "test:e2e": "playwright test",
+    "test:ui": "playwright test e2e/ui",
+    "test:api": "playwright test e2e/api"
   },
   "eslintConfig": {
     "extends": [
@@ -39,5 +42,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.3",
+    "@types/node": "^22.0.3"
   }
 }
