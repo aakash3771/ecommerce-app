@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import QuantityDropdown from "./QuantityDropdown";
 
 const API_BASE_URL = "https://fakestoreapi.com";
 
 const ProductDetailsPage = ({ addToCart }) => {
   const [product, setProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { id } = useParams();
@@ -43,13 +45,20 @@ const ProductDetailsPage = ({ addToCart }) => {
           <p className="text-muted">{product.category}</p>
           <p>{product.description}</p>
           <h3>${product.price.toFixed(2)}</h3>
-          <button
-            onClick={() => addToCart(product)}
-            className="btn btn-primary mt-3"
-          >
-            Add to Cart
-          </button>
-          <Link to="/" className="btn btn-secondary mt-3 ms-2">
+          <div className="d-flex align-items-center mt-3">
+            <QuantityDropdown
+              quantity={quantity}
+              onQuantityChange={setQuantity}
+              maxQuantity={10}
+            />
+            <button
+              onClick={() => addToCart(product, quantity)}
+              className="btn btn-primary ms-2"
+            >
+              Add to Cart
+            </button>
+          </div>
+          <Link to="/" className="btn btn-secondary mt-3">
             Back to Products
           </Link>
         </div>

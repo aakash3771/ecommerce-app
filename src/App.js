@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Route, Routes, Link } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { Route, Routes, useLocation, Link, NavLink } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import api from "./api";
 import CartPage from "./CartPage";
 import ProductDetailsPage from "./ProductDetailsPage";
 import CheckoutPage from "./CheckoutPage";
@@ -11,40 +12,65 @@ import FAQPage from "./FAQPage";
 import AboutPage from "./AboutPage";
 import ContactPage from "./ContactPage";
 import AccountPage from "./AccountPage";
-import QuantityDropdown from "./QuantityDropdown";
+import HomePage from "./Homepage";
 
-const API_BASE_URL = "https://fakestoreapi.com";
-
-const Header = ({ cartCount }) => (
+// Header Component
+const Header = React.memo(({ cartCount }) => (
   <header className="bg-dark text-white p-3 sticky-top">
     <div className="container">
       <div className="d-flex justify-content-between align-items-center">
-        <Link to="/" className="text-white text-decoration-none">
+        <NavLink to="/" className="text-white text-decoration-none">
           <h1 className="h4 m-0">MyEcommerce</h1>
-        </Link>
+        </NavLink>
         <nav>
-          <Link to="/" className="text-white me-3">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `text-white me-3 ${isActive ? "fw-bold" : ""}`
+            }
+          >
             Home
-          </Link>
-          <Link to="/about" className="text-white me-3">
+          </NavLink>
+          <NavLink
+            to="/about"
+            className={({ isActive }) =>
+              `text-white me-3 ${isActive ? "fw-bold" : ""}`
+            }
+          >
             About
-          </Link>
-          <Link to="/contact" className="text-white me-3">
+          </NavLink>
+          <NavLink
+            to="/contact"
+            className={({ isActive }) =>
+              `text-white me-3 ${isActive ? "fw-bold" : ""}`
+            }
+          >
             Contact
-          </Link>
-          <Link to="/account" className="text-white me-3">
+          </NavLink>
+          <NavLink
+            to="/account"
+            className={({ isActive }) =>
+              `text-white me-3 ${isActive ? "fw-bold" : ""}`
+            }
+          >
             Account
-          </Link>
-          <Link to="/cart" className="text-white">
+          </NavLink>
+          <NavLink
+            to="/cart"
+            className={({ isActive }) =>
+              `text-white ${isActive ? "fw-bold" : ""}`
+            }
+          >
             Cart ({cartCount})
-          </Link>
+          </NavLink>
         </nav>
       </div>
     </div>
   </header>
-);
+));
 
-const Footer = () => (
+// Footer Component
+const Footer = React.memo(() => (
   <footer className="bg-light text-center p-3 mt-5">
     <div className="container">
       <p>&copy; 2024 MyEcommerce. All rights reserved.</p>
@@ -61,9 +87,10 @@ const Footer = () => (
       </nav>
     </div>
   </footer>
-);
+));
 
-const SearchBar = ({ onSearch, onClear }) => {
+// SearchBar Component
+const SearchBar = React.memo(({ onSearch, onClear }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (e) => {
@@ -99,90 +126,51 @@ const SearchBar = ({ onSearch, onClear }) => {
       )}
     </form>
   );
-};
-
-const HomePage = ({ products, addToCart }) => {
-  return (
-    <div className="container mt-5">
-      <h2 className="mb-4">Featured Products</h2>
-      <div className="row">
-        {products.map((product) => (
-          <div key={product.id} className="col-md-3 mb-4">
-            <div className="card">
-              <Link to={`/product/${product.id}`}>
-                <img
-                  src={product.image}
-                  className="card-img-top"
-                  alt={product.title}
-                  style={{ height: "200px", objectFit: "contain" }}
-                />
-              </Link>
-              <div className="card-body">
-                <h5 className="card-title">
-                  <Link
-                    to={`/product/${product.id}`}
-                    className="text-decoration-none text-dark"
-                  >
-                    {product.title}
-                  </Link>
-                </h5>
-                <p className="card-text">${product.price.toFixed(2)}</p>
-                <p className="card-text text-muted">{product.category}</p>
-                <QuantityDropdown
-                  quantity={1}
-                  onQuantityChange={(quantity) => addToCart(product, quantity)}
-                />
-                <button
-                  onClick={() => addToCart(product, 1)}
-                  className="btn btn-primary mt-2"
-                >
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+});
 
 const App = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [cart, setCart] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const location = useLocation();
 
-  useEffect(() => {
-    fetchProducts();
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/products`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch products");
-      }
-      const data = await response.json();
-      setProducts(data);
-      setFilteredProducts(data);
+      const response = await api.get("/products");
+      setProducts(response.data);
+      setFilteredProducts(response.data);
       setLoading(false);
     } catch (err) {
       setError(err.message);
       setLoading(false);
     }
-  };
+  }, []);
 
-  const addToCart = (product, quantity) => {
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await api.get("/products/categories");
+      setCategories(response.data);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  const addToCart = useCallback((product, quantity) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
@@ -195,46 +183,64 @@ const App = () => {
       return [...prevCart, { ...product, quantity }];
     });
     toast.success(`${product.title} added to cart!`, {
-      position: "top-right",
+      position: "bottom-right",
       autoClose: 3000,
     });
-  };
+  }, []);
 
-  const updateQuantity = (productId, newQuantity) => {
+  const updateQuantity = useCallback((productId, newQuantity) => {
     setCart((prevCart) =>
       prevCart.map((item) =>
         item.id === productId ? { ...item, quantity: newQuantity } : item,
       ),
     );
-  };
+  }, []);
 
-  const removeFromCart = (productId) => {
-    const product = cart.find((item) => item.id === productId);
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
-    toast.success(`${product.title} removed from cart!`, {
-      position: "top-right",
-      autoClose: 3000,
+  const removeFromCart = useCallback((productId) => {
+    setCart((prevCart) => {
+      const updatedCart = prevCart.filter((item) => item.id !== productId);
+      const removedProduct = prevCart.find((item) => item.id === productId);
+      if (removedProduct) {
+        toast.success(`${removedProduct.title} removed from cart!`, {
+          position: "bottom-right",
+          autoClose: 3000,
+        });
+      }
+      return updatedCart;
     });
-  };
+  }, []);
 
-  const placeOrder = () => {
+  const placeOrder = useCallback(() => {
     toast.success("Order placed successfully!", {
-      position: "top-right",
+      position: "bottom-right",
       autoClose: 5000,
     });
     setCart([]);
-  };
+  }, []);
 
-  const handleSearch = (searchTerm) => {
-    const filtered = products.filter((product) =>
-      product.title.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-    setFilteredProducts(filtered);
-  };
+  const handleSearch = useCallback(
+    (searchTerm) => {
+      setFilteredProducts(
+        products.filter((product) =>
+          product.title.toLowerCase().includes(searchTerm.toLowerCase()),
+        ),
+      );
+    },
+    [products],
+  );
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setFilteredProducts(products);
-  };
+  }, [products]);
+
+  const handleCategorySelect = useCallback(
+    (category) => {
+      setFilteredProducts(
+        products.filter((product) => product.category === category),
+      );
+    },
+    [products],
+  );
 
   if (loading) {
     return <div className="container mt-5">Loading...</div>;
@@ -247,15 +253,22 @@ const App = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} />
-      <div className="container">
-        <SearchBar onSearch={handleSearch} onClear={clearSearch} />
-      </div>
+      {location.pathname !== "/cart" && (
+        <div className="container">
+          <SearchBar onSearch={handleSearch} onClear={clearSearch} />
+        </div>
+      )}
       <main className="flex-grow-1">
         <Routes>
           <Route
             path="/"
             element={
-              <HomePage products={filteredProducts} addToCart={addToCart} />
+              <HomePage
+                products={filteredProducts}
+                addToCart={addToCart}
+                categories={categories}
+                onCategorySelect={handleCategorySelect}
+              />
             }
           />
           <Route
@@ -285,7 +298,7 @@ const App = () => {
         </Routes>
       </main>
       <Footer />
-      <ToastContainer />
+      <ToastContainer position="bottom-right" />
     </div>
   );
 };
